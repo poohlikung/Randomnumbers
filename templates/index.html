@@ -1,68 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
-    <title>RandomNumbers</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
+  <title>RandomNumbers</title>
 </head>
 <body>
+  <!-- Background effect -->
+  <div class="bg"></div>
 
-<h1>Random number</h1>
+  <h1 class="title">🎲 Random Number 🎲</h1>
 
-<div class="container">
-    <button onclick="spinWheel()">SPIN !</button>
-</div>
+  <div class="container">
+    <button class="spin-btn" onclick="document.getElementById('clickSound').play(); spinWheel();">SPIN !</button>
+  </div>
 
-<h2 id="result">Number is : </h2>
+  <h2 id="result" class="result-text">Number is : </h2>
 
-<script>
+  <!-- Sound elements -->
+  <audio id="bgm" src="/static/bgm.mp3" autoplay loop></audio>
+  <audio id="clickSound" src="/static/click.mp3"></audio>
+
+  <script>
     let lockedNumber = null;
 
-    // ฟังก์ชันสำหรับล็อคเลข (ซ่อนอยู่ ไม่แสดงบนหน้าเว็บ)
     function setLockedNumber(num) {
-        lockedNumber = num;
+      lockedNumber = num;
     }
 
     function spinWheel() {
-        const resultElement = document.getElementById("result");
-        let counter = 0;
-        let randomInterval;
+      const resultElement = document.getElementById("result");
+      let counter = 0;
+      let randomInterval;
 
-        // แสดงเลขชั่วคราวก่อนสุ่มจริง
-        randomInterval = setInterval(() => {
-            const tempNumber = Math.floor(Math.random() * 10) + 1;
-            resultElement.innerText = `Random... ${tempNumber}`;
-        }, 100); // เปลี่ยนเลขทุก 100ms
+      resultElement.classList.remove("pop"); // reset animation
+      void resultElement.offsetWidth; // trick to re-trigger animation
 
-        // กำหนดระยะเวลาที่จะหยุดการสุ่ม (เช่น 3 วินาที)
-        setTimeout(() => {
-            clearInterval(randomInterval);  // หยุดการสุ่มชั่วคราว
+      randomInterval = setInterval(() => {
+        const tempNumber = Math.floor(Math.random() * 10) + 1;
+        resultElement.innerText = `Random... ${tempNumber}`;
+      }, 100);
 
-            // เริ่มการสุ่มจริง
-            const data = lockedNumber ? { "locked_number": lockedNumber } : {};
+      setTimeout(() => {
+        clearInterval(randomInterval);
+        const data = lockedNumber ? { locked_number: lockedNumber } : {};
 
-            fetch("/spin", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                resultElement.innerText = `Number is: ${data.result}`;
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                resultElement.innerText = "Invaild input";
-            });
-
-        }, 3000);  // 3000ms = 3 วินาที (ระยะเวลาที่จะสุ่มก่อนแสดงผลลัพธ์จริง)
+        fetch("/spin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            resultElement.innerText = `Number is: ${data.result}`;
+            resultElement.classList.add("pop"); // trigger animation
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            resultElement.innerText = "Invalid input";
+          });
+      }, 3000);
     }
-</script>
-
+  </script>
 </body>
 </html>
