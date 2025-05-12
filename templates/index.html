@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+    <title>RandomNumbers</title>
+</head>
+<body>
+
+<h1>Random number</h1>
+
+<div class="container">
+    <button onclick="spinWheel()">SPIN !</button>
+</div>
+
+<h2 id="result">Number is : </h2>
+
+<script>
+    let lockedNumber = null;
+
+    // ฟังก์ชันสำหรับล็อคเลข (ซ่อนอยู่ ไม่แสดงบนหน้าเว็บ)
+    function setLockedNumber(num) {
+        lockedNumber = num;
+    }
+
+    function spinWheel() {
+        const resultElement = document.getElementById("result");
+        let counter = 0;
+        let randomInterval;
+
+        // แสดงเลขชั่วคราวก่อนสุ่มจริง
+        randomInterval = setInterval(() => {
+            const tempNumber = Math.floor(Math.random() * 10) + 1;
+            resultElement.innerText = `Random... ${tempNumber}`;
+        }, 100); // เปลี่ยนเลขทุก 100ms
+
+        // กำหนดระยะเวลาที่จะหยุดการสุ่ม (เช่น 3 วินาที)
+        setTimeout(() => {
+            clearInterval(randomInterval);  // หยุดการสุ่มชั่วคราว
+
+            // เริ่มการสุ่มจริง
+            const data = lockedNumber ? { "locked_number": lockedNumber } : {};
+
+            fetch("/spin", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultElement.innerText = `Number is: ${data.result}`;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                resultElement.innerText = "Invaild input";
+            });
+
+        }, 3000);  // 3000ms = 3 วินาที (ระยะเวลาที่จะสุ่มก่อนแสดงผลลัพธ์จริง)
+    }
+</script>
+
+</body>
+</html>
