@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, jsonify
 import random
 
@@ -26,7 +27,8 @@ def spin():
     print(f"Random result: {result}")
     return jsonify({"result": result})
 
-if __name__ == "_main_":
-    import os
+if __name__ == "__main__":
+    # กำหนด PORT ให้รับจาก Environment Variable
     port = int(os.environ.get("PORT", 5000))
+    print(f"Starting server on port {port}...")
     app.run(host="0.0.0.0", port=port)
